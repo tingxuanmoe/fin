@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const diffCountDisplay = document.getElementById('diff-count');
     const livesDisplay = document.getElementById('lives');
     const winModal = document.getElementById('win-modal');
-    const gameOverModal = document.getElementById('game-over-modal');
     const nextLevelBtn = document.getElementById('next-level-btn');
     const canvasArea = document.getElementById('canvas-area');
 
@@ -180,7 +179,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         drawLevel(levelData);
         winModal.classList.add('hidden');
-        gameOverModal.classList.add('hidden');
     }
 
     function handleCanvasClick(event) {
@@ -233,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lives--;
             livesDisplay.textContent = lives;
             if (lives <= 0) {
-                gameOverModal.classList.remove('hidden');
+                // Game over - do nothing
             }
         }
     }
