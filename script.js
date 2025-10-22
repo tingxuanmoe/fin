@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const winModal = document.getElementById('win-modal');
     const gameOverModal = document.getElementById('game-over-modal');
     const nextLevelBtn = document.getElementById('next-level-btn');
-    const restartBtn = document.getElementById('restart-btn');
     const canvasArea = document.getElementById('canvas-area');
 
     // 游戏状态
@@ -27,9 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const canvasWidth = canvasLeft.width;
         const canvasHeight = canvasLeft.height;
 
-        // 难度参数
-        const numShapes = Math.min(5 + levelNumber * 2, 20); // 基础图形数量
-        const numDiffs = Math.min(1 + Math.floor(levelNumber / 2), 7); // 不同点数量
+        // 难度参数 (简单模式)
+        const numShapes = Math.min(3 + levelNumber, 12); // 基础图形数量
+        const numDiffs = Math.min(1 + Math.floor(levelNumber / 3), 4); // 不同点数量
 
         // --- 辅助函数 ---
         const getRandom = (min, max) => Math.random() * (max - min) + min;
@@ -163,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadLevel(levelIndex) {
         if (levelIndex >= 10) { // 关卡上限为10
             alert('恭喜你！已通关所有关卡！');
-            restartGame(); // 通关后自动重启
+            // 游戏结束，不再重启
             return;
         }
 
@@ -182,13 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         drawLevel(levelData);
         winModal.classList.add('hidden');
         gameOverModal.classList.add('hidden');
-    }
-
-    function restartGame() {
-        lives = 5;
-        currentLevel = 0;
-        livesDisplay.textContent = lives;
-        loadLevel(0);
     }
 
     function handleCanvasClick(event) {
@@ -251,7 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
     nextLevelBtn.addEventListener('click', () => {
         loadLevel(currentLevel + 1);
     });
-    restartBtn.addEventListener('click', restartGame);
 
     // 启动游戏
     loadLevel(0);
