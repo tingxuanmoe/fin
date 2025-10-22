@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>找不同小游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>找不同</h1>
+        <div id="info-bar">
+            <span>关卡: <span id="level">1</span></span>
+            <span>剩余: <span id="diff-count">0</span></span>
+        </div>
+        <div id="canvas-area">
+            <canvas id="canvas-left" width="400" height="400"></canvas>
+            <canvas id="canvas-right" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <div id="win-modal" class="hidden">
+        <div class="modal-content">
+            <h2>太棒了！</h2>
+            <p>你完成了本关！</p>
+            <button id="next-level-btn">下一关</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
