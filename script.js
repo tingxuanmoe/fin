@@ -75,27 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const shapesToModify = [...baseShapes].sort(() => 0.5 - Math.random()).slice(0, numDiffs);
 
         shapesToModify.forEach(shape => {
-            const diffType = ['color', 'move'][Math.floor(Math.random() * 2)];
+            const diffType = 'move'; // 只生成 'move' 类型的不同点
             let difference = { ...shape }; // 复制一份以备修改
 
-            switch (diffType) {
-                case 'color':
-                    // 解析出原有的 HSL 值
-                    const [h, s, l] = shape.color.match(/\d+/g).map(Number);
-                    // 显著改变亮度
-                    const newLightness = l > 50 ? l - 25 : l + 25;
-                    difference.newColor = `hsl(${h}, ${s}%, ${newLightness}%)`;
-                    break;
-                case 'move':
-                    const moveX = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
-                    const moveY = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
-                    const size = shape.radius || shape.size || shape.width;
-                    // 确保移动后不会超出边界
-                    difference.newX = Math.max(size, Math.min(canvasWidth - size, shape.x + moveX));
-                    difference.newY = Math.max(size, Math.min(canvasHeight - size, shape.y + moveY));
-                    break;
-            }
-            differences.push({ type: diffType, ...difference });
+            const moveX = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
+            const moveY = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
+            const size = shape.radius || shape.size || shape.width;
+            // 确保移动后不会超出边界
+            difference.newX = Math.max(size, Math.min(canvasWidth - size, shape.x + moveX));
+            difference.newY = Math.max(size, Math.min(canvasHeight - size, shape.y + moveY));
+
+            differences.push({ type: 'move', ...difference });
         });
 
         return { baseShapes, differences };
@@ -150,28 +140,21 @@ document.addEventListener('DOMContentLoaded', () => {
         ctxLeft.clearRect(0, 0, canvasLeft.width, canvasLeft.height);
         ctxRight.clearRect(0, 0, canvasRight.width, canvasRight.height);
 
-        // 绘制基础图形
+        // 绘制左边画布（所有基础图形）
         levelData.baseShapes.forEach(shape => {
             drawShape(ctxLeft, shape);
-            drawShape(ctxRight, shape);
         });
 
-        // 在右侧画布上绘制不同点
-        levelData.differences.forEach(diff => {
-            if (diff.type === 'add') {
-                drawShape(ctxRight, diff.shape);
-            } else if (diff.type === 'color') {
-                const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
-                if (originalShape) {
-                    const modifiedShape = { ...originalShape, color: diff.newColor };
-                    drawShape(ctxRight, modifiedShape);
-                }
-            } else if (diff.type === 'move') {
-                const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
-                if (originalShape) {
-                    const modifiedShape = { ...originalShape, x: diff.newX, y: diff.newY };
-                    drawShape(ctxRight, modifiedShape);
-                }
+        // 绘制右边画布（应用不同点）
+        levelData.baseShapes.forEach(shape => {
+            const difference = levelData.differences.find(d => d.x === shape.x && d.y === shape.y);
+            if (difference) {
+                // 如果是不同点，使用新坐标绘制
+                const modifiedShape = { ...shape, x: difference.newX, y: difference.newY };
+                drawShape(ctxRight, modifiedShape);
+            } else {
+                // 否则，按原样绘制
+                drawShape(ctxRight, shape);
             }
         });
     }
