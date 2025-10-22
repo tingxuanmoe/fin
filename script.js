@@ -7,92 +7,99 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const levelDisplay = document.getElementById('level');
     const diffCountDisplay = document.getElementById('diff-count');
+    const livesDisplay = document.getElementById('lives');
     const winModal = document.getElementById('win-modal');
+    const gameOverModal = document.getElementById('game-over-modal');
     const nextLevelBtn = document.getElementById('next-level-btn');
+    const restartBtn = document.getElementById('restart-btn');
     const canvasArea = document.getElementById('canvas-area');
 
     // 游戏状态
     let currentLevel = 0;
     let differences = [];
     let foundDifferences = 0;
+    let lives = 5;
 
-    // --- 关卡数据 ---
-    const levels = [
-        // 关卡 1: 一个简单的不同颜色的圆
-        {
-            baseShapes: [
-                { type: 'circle', color: '#4682B4', x: 200, y: 200, radius: 50 },
-                { type: 'circle', color: '#6A5ACD', x: 100, y: 150, radius: 30 },
-                { type: 'circle', color: '#6A5ACD', x: 300, y: 250, radius: 40 },
-            ],
-            differences: [
-                { type: 'color', x: 100, y: 150, radius: 30, newColor: '#FF6347' }
-            ]
-        },
-        // 关卡 2: 增加一个形状 & 颜色不同
-        {
-            baseShapes: [
-                { type: 'rect', color: '#87CEEB', x: 50, y: 50, width: 80, height: 80 },
-                { type: 'rect', color: '#87CEEB', x: 250, y: 280, width: 100, height: 60 },
-                { type: 'smiley', x: 200, y: 180, size: 50 },
-            ],
-            differences: [
-                { type: 'add', shape: { type: 'circle', color: '#32CD32', x: 320, y: 100, radius: 25 } },
-                { type: 'color', x: 50, y: 50, width: 80, height: 80, newColor: '#9370DB' }
-            ]
-        },
-         // 关卡 3: 更多细微差别
-        {
-            baseShapes: [
-                { type: 'smiley', x: 100, y: 100, size: 40, color: '#FFD700' },
-                { type: 'smiley', x: 300, y: 300, size: 60, color: '#FFD700' },
-                { type: 'smiley', x: 150, y: 250, size: 30, color: '#FFD700' },
-                { type: 'smiley', x: 280, y: 120, size: 35, color: '#FFD700' },
-            ],
-            differences: [
-                // 嘴巴不一样
-                { type: 'mouth', x: 100, y: 100, size: 40, newMouth: 'sad' },
-                // 眼睛颜色不一样
-                { type: 'eyeColor', x: 300, y: 300, size: 60, newColor: 'blue' },
-                 // 多了一个小装饰
-                { type: 'add', shape: {type: 'rect', color: '#FF69B4', x: 145, y: 230, width: 10, height: 10 } }
-            ]
-        },
-        // 关卡 4: 位移和大小变化
-        {
-            baseShapes: [
-                { type: 'rect', color: '#00CED1', x: 50, y: 50, width: 50, height: 50 },
-                { type: 'rect', color: '#00CED1', x: 150, y: 150, width: 50, height: 50 },
-                { type: 'rect', color: '#00CED1', x: 250, y: 250, width: 50, height: 50 },
-                { type: 'rect', color: '#00CED1', x: 350, y: 50, width: 50, height: 50 },
-                { type: 'rect', color: '#00CED1', x: 50, y: 350, width: 50, height: 50 },
-            ],
-            differences: [
-                { type: 'move', x: 150, y: 150, newX: 155, newY: 155, width: 50, height: 50 },
-                { type: 'size', x: 250, y: 250, newWidth: 45, newHeight: 45, width: 50, height: 50 },
-                { type: 'color', x: 350, y: 50, newColor: '#00BFFF', width: 50, height: 50 },
-            ]
-        },
-        // 关卡 5: 综合高难度
-        {
-            baseShapes: [
-                { type: 'circle', color: '#FFC0CB', x: 50, y: 50, radius: 10 },
-                { type: 'circle', color: '#FFC0CB', x: 100, y: 100, radius: 10 },
-                { type: 'circle', color: '#FFC0CB', x: 150, y: 150, radius: 10 },
-                { type: 'circle', color: '#FFC0CB', x: 200, y: 200, radius: 10 },
-                { type: 'circle', color: '#FFC0CB', x: 250, y: 250, radius: 10 },
-                { type: 'circle', color: '#FFC0CB', x: 300, y: 300, radius: 10 },
-                { type: 'circle', color: '#FFC0CB', x: 350, y: 350, radius: 10 },
-                { type: 'smiley', x: 200, y: 100, size: 30 },
-            ],
-            differences: [
-                { type: 'add', shape: { type: 'circle', color: '#FFC0CB', x: 50, y: 350, radius: 10 } },
-                { type: 'color', x: 200, y: 200, radius: 10, newColor: '#FFB6C1' }, // very slight color change
-                { type: 'move', x: 300, y: 300, radius: 10, newX: 302, newY: 302 },
-                { type: 'mouth', x: 200, y: 100, size: 30, newMouth: 'sad' },
-            ]
+    // --- 随机关卡生成器 ---
+    function generateLevel(levelNumber) {
+        const baseShapes = [];
+        const differences = [];
+        const canvasWidth = canvasLeft.width;
+        const canvasHeight = canvasLeft.height;
+
+        // 难度参数
+        const numShapes = Math.min(5 + levelNumber * 2, 20); // 基础图形数量
+        const numDiffs = Math.min(1 + Math.floor(levelNumber / 2), 7); // 不同点数量
+
+        // --- 辅助函数 ---
+        const getRandom = (min, max) => Math.random() * (max - min) + min;
+        const getRandomColor = () => `hsl(${getRandom(0, 360)}, 70%, 60%)`;
+        const shapeTypes = ['circle', 'rect', 'smiley'];
+
+        // --- 生成基础图形 ---
+        for (let i = 0; i < numShapes; i++) {
+            let shape;
+            let overlapping;
+            do {
+                overlapping = false;
+                const type = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
+                const size = getRandom(15, 40);
+                shape = {
+                    type: type,
+                    color: getRandomColor(),
+                    x: getRandom(size, canvasWidth - size),
+                    y: getRandom(size, canvasHeight - size),
+                };
+                if (type === 'circle') {
+                    shape.radius = size;
+                } else if (type === 'rect') {
+                    shape.width = size;
+                    shape.height = size;
+                } else if (type === 'smiley') {
+                    shape.size = size;
+                }
+
+                // 简单的碰撞检测
+                for (const existingShape of baseShapes) {
+                    const dist = Math.sqrt((shape.x - existingShape.x)**2 + (shape.y - existingShape.y)**2);
+                    if (dist < (shape.radius || size) + (existingShape.radius || existingShape.size || existingShape.width)) {
+                        overlapping = true;
+                        break;
+                    }
+                }
+            } while (overlapping);
+            baseShapes.push(shape);
         }
-    ];
+
+        // --- 从基础图形中挑选并生成不同点 ---
+        const shapesToModify = [...baseShapes].sort(() => 0.5 - Math.random()).slice(0, numDiffs);
+
+        shapesToModify.forEach(shape => {
+            const diffType = ['color', 'move', 'size'][Math.floor(Math.random() * 3)];
+            let difference = { ...shape }; // 复制一份以备修改
+
+            switch (diffType) {
+                case 'color':
+                    difference.newColor = `hsl(${getRandom(0, 360)}, 70%, 50%)`;
+                    break;
+                case 'move':
+                    difference.newX = shape.x + getRandom(-10, 10);
+                    difference.newY = shape.y + getRandom(-10, 10);
+                    break;
+                case 'size':
+                    if (shape.type === 'circle') {
+                        difference.newRadius = Math.max(5, shape.radius * getRandom(0.8, 1.2));
+                    } else {
+                        difference.newWidth = Math.max(5, shape.width * getRandom(0.8, 1.2));
+                        difference.newHeight = Math.max(5, shape.height * getRandom(0.8, 1.2));
+                    }
+                    break;
+            }
+            differences.push({ type: diffType, ...difference });
+        });
+
+        return { baseShapes, differences };
+    }
 
     // --- 绘图函数 ---
     function drawShape(ctx, shape) {
@@ -159,16 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const modifiedShape = { ...originalShape, color: diff.newColor };
                     drawShape(ctxRight, modifiedShape);
                 }
-            } else if (diff.type === 'mouth') {
-                 const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
-                 if (originalShape) {
-                     drawSmiley(ctxRight, diff.x, diff.y, diff.size, originalShape.color, 'black', 'sad');
-                 }
-            } else if (diff.type === 'eyeColor') {
-                const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
-                 if (originalShape) {
-                     drawSmiley(ctxRight, diff.x, diff.y, diff.size, originalShape.color, 'blue', 'happy');
-                 }
             } else if (diff.type === 'move') {
                 const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
                 if (originalShape) {
@@ -178,7 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (diff.type === 'size') {
                 const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
                 if (originalShape) {
-                    const modifiedShape = { ...originalShape, width: diff.newWidth, height: diff.newHeight };
+                    const modifiedShape = {
+                        ...originalShape,
+                        radius: diff.newRadius,
+                        width: diff.newWidth,
+                        height: diff.newHeight,
+                        size: diff.newRadius || diff.newWidth, // For smiley
+                    };
                     drawShape(ctxRight, modifiedShape);
                 }
             }
@@ -187,13 +190,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 游戏逻辑 ---
     function loadLevel(levelIndex) {
-        if (levelIndex >= levels.length) {
+        if (levelIndex >= 10) { // 关卡上限为10
             alert('恭喜你！已通关所有关卡！');
+            restartGame(); // 通关后自动重启
             return;
         }
 
         currentLevel = levelIndex;
-        const levelData = levels[currentLevel];
+        const levelData = generateLevel(currentLevel); // 调用生成器
         differences = levelData.differences.map(d => ({ ...d, found: false }));
         foundDifferences = 0;
 
@@ -206,19 +210,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         drawLevel(levelData);
         winModal.classList.add('hidden');
+        gameOverModal.classList.add('hidden');
+    }
+
+    function restartGame() {
+        lives = 5;
+        currentLevel = 0;
+        livesDisplay.textContent = lives;
+        loadLevel(0);
     }
 
     function handleCanvasClick(event) {
+        if (lives <= 0) return; // 生命值为0时禁用点击
         const rect = canvasRight.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
+
+        let hitDetected = false;
 
         differences.forEach((diff, index) => {
             if (diff.found) return;
 
             // 确定点击区域
             let hit = false;
-            const hitboxSize = (diff.radius || (diff.shape ? diff.shape.radius : 0) || (diff.width ? Math.max(diff.width, diff.height) : 0) || 30) * 1.2;
+            // Adjust hitbox calculation to account for new size properties
+            const hitboxSize = (diff.newRadius || diff.radius || (diff.shape ? diff.shape.radius : 0) || diff.newWidth || (diff.width ? Math.max(diff.width, diff.height) : 0) || 30) * 1.2;
 
             const checkX = diff.newX || (diff.shape ? diff.shape.x : diff.x);
             const checkY = diff.newY || (diff.shape ? diff.shape.y : diff.y);
@@ -230,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (hit) {
+                hitDetected = true;
                 diff.found = true;
                 foundDifferences++;
                 diffCountDisplay.textContent = differences.length - foundDifferences;
@@ -249,6 +266,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        if (!hitDetected) {
+            lives--;
+            livesDisplay.textContent = lives;
+            if (lives <= 0) {
+                gameOverModal.classList.remove('hidden');
+            }
+        }
     }
 
     // --- 事件监听 ---
@@ -256,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     nextLevelBtn.addEventListener('click', () => {
         loadLevel(currentLevel + 1);
     });
+    restartBtn.addEventListener('click', restartGame);
 
     // 启动游戏
     loadLevel(0);
