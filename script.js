@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const shapesToModify = [...baseShapes].sort(() => 0.5 - Math.random()).slice(0, numDiffs);
 
         shapesToModify.forEach(shape => {
-            const diffType = ['color', 'move', 'size'][Math.floor(Math.random() * 3)];
+            const diffType = ['color', 'move'][Math.floor(Math.random() * 2)];
             let difference = { ...shape }; // 复制一份以备修改
 
             switch (diffType) {
@@ -93,15 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 确保移动后不会超出边界
                     difference.newX = Math.max(size, Math.min(canvasWidth - size, shape.x + moveX));
                     difference.newY = Math.max(size, Math.min(canvasHeight - size, shape.y + moveY));
-                    break;
-                case 'size':
-                    const scale = Math.random() > 0.5 ? getRandom(1.4, 1.6) : getRandom(0.5, 0.7);
-                    if (shape.type === 'circle') {
-                        difference.newRadius = Math.max(10, shape.radius * scale);
-                    } else {
-                        difference.newWidth = Math.max(10, shape.width * scale);
-                        difference.newHeight = Math.max(10, shape.height * scale);
-                    }
                     break;
             }
             differences.push({ type: diffType, ...difference });
@@ -181,18 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const modifiedShape = { ...originalShape, x: diff.newX, y: diff.newY };
                     drawShape(ctxRight, modifiedShape);
                 }
-            } else if (diff.type === 'size') {
-                const originalShape = levelData.baseShapes.find(s => s.x === diff.x && s.y === diff.y);
-                if (originalShape) {
-                    const modifiedShape = {
-                        ...originalShape,
-                        radius: diff.newRadius,
-                        width: diff.newWidth,
-                        height: diff.newHeight,
-                        size: diff.newRadius || diff.newWidth, // For smiley
-                    };
-                    drawShape(ctxRight, modifiedShape);
-                }
             }
         });
     }
@@ -242,8 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 确定点击区域
             let hit = false;
-            // Adjust hitbox calculation to account for new size properties
-            const hitboxSize = (diff.newRadius || diff.radius || (diff.shape ? diff.shape.radius : 0) || diff.newWidth || (diff.width ? Math.max(diff.width, diff.height) : 0) || 30) * 1.2;
+            const hitboxSize = (diff.radius || diff.size || (diff.shape ? diff.shape.radius : 0) || (diff.width ? Math.max(diff.width, diff.height) : 0) || 30) * 1.2;
 
             const checkX = diff.newX || (diff.shape ? diff.shape.x : diff.x);
             const checkY = diff.newY || (diff.shape ? diff.shape.y : diff.y);
