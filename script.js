@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const diffCountDisplay = document.getElementById('diff-count');
     const livesDisplay = document.getElementById('lives');
     const winModal = document.getElementById('win-modal');
+    const gameOverModal = document.getElementById('game-over-modal');
     const nextLevelBtn = document.getElementById('next-level-btn');
     const canvasArea = document.getElementById('canvas-area');
 
@@ -179,6 +180,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         drawLevel(levelData);
         winModal.classList.add('hidden');
+        gameOverModal.classList.add('hidden');
+    }
+
+    function revealMissedDifferences() {
+        const rect = canvasRight.getBoundingClientRect();
+        differences.forEach(diff => {
+            if (!diff.found) {
+                const hitboxSize = (diff.radius || diff.size || (diff.shape ? diff.shape.radius : 0) || (diff.width ? Math.max(diff.width, diff.height) : 0) || 30) * 1.2;
+                const checkX = diff.newX || (diff.shape ? diff.shape.x : diff.x);
+                const checkY = diff.newY || (diff.shape ? diff.shape.y : diff.y);
+
+                const marker = document.createElement('div');
+                marker.classList.add('missed-marker');
+                marker.style.left = `${rect.left + checkX - hitboxSize / 2}px`;
+                marker.style.top = `${rect.top + checkY - hitboxSize / 2}px`;
+                marker.style.width = `${hitboxSize}px`;
+                marker.style.height = `${hitboxSize}px`;
+                document.body.appendChild(marker);
+            }
+        });
     }
 
     function handleCanvasClick(event) {
@@ -231,7 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
             lives--;
             livesDisplay.textContent = lives;
             if (lives <= 0) {
-                // Game over - do nothing
+                revealMissedDifferences();
+                gameOverModal.classList.remove('hidden');
             }
         }
     }

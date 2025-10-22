@@ -46,7 +46,7 @@ canvas {
 }
 
 /* 模态框样式 */
-#win-modal {
+#win-modal, #game-over-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -59,7 +59,7 @@ canvas {
     z-index: 100;
 }
 
-#win-modal.hidden {
+#win-modal.hidden, #game-over-modal.hidden {
     display: none;
 }
 
@@ -100,6 +100,14 @@ canvas {
     border: 3px solid red;
     border-radius: 50%;
     pointer-events: none; /* 允许点击穿透 */
+    animation: pop-in 0.3s ease;
+}
+
+.missed-marker {
+    position: absolute;
+    border: 3px solid yellow;
+    border-radius: 50%;
+    pointer-events: none;
     animation: pop-in 0.3s ease;
 }
 
