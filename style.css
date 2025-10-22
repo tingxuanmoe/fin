@@ -35,14 +35,19 @@ h1 {
     display: flex;
     justify-content: center;
     flex-wrap: wrap; /* 在小屏幕上换行 */
-    gap: 20px;
+    gap: 10px;
     position: relative;
+    max-width: 90vw; /* 在桌面上限制最大宽度 */
+    margin: 0 auto;
 }
 
 canvas {
     border: 2px solid #ddd;
     border-radius: 10px;
     background-color: #fdfdfd;
+    width: 45%; /* 每个 canvas 占据近一半的宽度 */
+    aspect-ratio: 1 / 1; /* 保持正方形 */
+    max-width: 400px; /* 单个 canvas 的最大尺寸 */
 }
 
 /* 模态框样式 */
@@ -120,4 +125,29 @@ canvas {
 @keyframes pop-in {
     from { transform: scale(0); }
     to { transform: scale(1); }
+}
+
+/* 针对小屏幕的媒体查询 */
+@media (max-width: 600px) {
+    #game-container {
+        padding: 10px;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    #info-bar {
+        font-size: 1em;
+    }
+
+    #canvas-area {
+        gap: 5px;
+    }
+
+    canvas {
+        width: 48%; /* 稍微增大 canvas 宽度以更好地利用空间 */
+    }
 }

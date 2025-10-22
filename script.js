@@ -35,14 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const getRandomColor = () => `hsl(${getRandom(0, 360)}, 70%, 60%)`;
         const shapeTypes = ['circle', 'rect', 'smiley'];
 
-        // --- 生成基础图形 ---
+        // --- 生成基础图形 (使用比例) ---
         for (let i = 0; i < numShapes; i++) {
             let shape;
             let overlapping;
             do {
                 overlapping = false;
                 const type = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
-                const size = getRandom(15, 40);
+                const size = getRandom(canvasWidth * 0.05, canvasWidth * 0.15); // Size as a factor of canvas width
                 shape = {
                     type: type,
                     color: getRandomColor(),
@@ -77,8 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const diffType = 'move'; // 只生成 'move' 类型的不同点
             let difference = { ...shape }; // 复制一份以备修改
 
-            const moveX = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
-            const moveY = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
+            const moveX = getRandom(canvasWidth * 0.04, canvasWidth * 0.08) * (Math.random() > 0.5 ? 1 : -1);
+            const moveY = getRandom(canvasHeight * 0.04, canvasHeight * 0.08) * (Math.random() > 0.5 ? 1 : -1);
             const size = shape.radius || shape.size || shape.width;
             // 确保移动后不会超出边界
             difference.newX = Math.max(size, Math.min(canvasWidth - size, shape.x + moveX));
@@ -167,7 +167,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         currentLevel = levelIndex;
-        const levelData = generateLevel(currentLevel); // 调用生成器
+
+        // 关键：先调整画布尺寸，再生成关卡
+        const size = document.body.clientWidth > 850 ? 400 : document.body.clientWidth * 0.4;
+        canvasLeft.width = size;
+        canvasLeft.height = size;
+        canvasRight.width = size;
+        canvasRight.height = size;
+
+        const levelData = generateLevel(currentLevel);
+        lastLevelData = levelData; // 保存数据用于重绘
         differences = levelData.differences.map(d => ({ ...d, found: false }));
         foundDifferences = 0;
 
@@ -263,6 +272,22 @@ document.addEventListener('DOMContentLoaded', () => {
     nextLevelBtn.addEventListener('click', () => {
         loadLevel(currentLevel + 1);
     });
+
+    // --- 响应式画布处理 ---
+    let lastLevelData = null; // 存储当前关卡的原始数据
+
+    function resizeAndDraw() {
+        const size = canvasLeft.clientWidth;
+        canvasLeft.width = size;
+        canvasLeft.height = size;
+        canvasRight.width = size;
+        canvasRight.height = size;
+
+        if (lastLevelData) {
+            drawLevel(lastLevelData);
+        }
+    }
+
 
     // 启动游戏
     loadLevel(0);
