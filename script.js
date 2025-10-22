@@ -80,18 +80,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             switch (diffType) {
                 case 'color':
-                    difference.newColor = `hsl(${getRandom(0, 360)}, 70%, 50%)`;
+                    // 解析出原有的 HSL 值
+                    const [h, s, l] = shape.color.match(/\d+/g).map(Number);
+                    // 显著改变亮度
+                    const newLightness = l > 50 ? l - 25 : l + 25;
+                    difference.newColor = `hsl(${h}, ${s}%, ${newLightness}%)`;
                     break;
                 case 'move':
-                    difference.newX = shape.x + getRandom(-10, 10);
-                    difference.newY = shape.y + getRandom(-10, 10);
+                    const moveX = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
+                    const moveY = getRandom(15, 25) * (Math.random() > 0.5 ? 1 : -1);
+                    const size = shape.radius || shape.size || shape.width;
+                    // 确保移动后不会超出边界
+                    difference.newX = Math.max(size, Math.min(canvasWidth - size, shape.x + moveX));
+                    difference.newY = Math.max(size, Math.min(canvasHeight - size, shape.y + moveY));
                     break;
                 case 'size':
+                    const scale = Math.random() > 0.5 ? getRandom(1.4, 1.6) : getRandom(0.5, 0.7);
                     if (shape.type === 'circle') {
-                        difference.newRadius = Math.max(5, shape.radius * getRandom(0.8, 1.2));
+                        difference.newRadius = Math.max(10, shape.radius * scale);
                     } else {
-                        difference.newWidth = Math.max(5, shape.width * getRandom(0.8, 1.2));
-                        difference.newHeight = Math.max(5, shape.height * getRandom(0.8, 1.2));
+                        difference.newWidth = Math.max(10, shape.width * scale);
+                        difference.newHeight = Math.max(10, shape.height * scale);
                     }
                     break;
             }
